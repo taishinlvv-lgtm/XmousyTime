@@ -7,7 +7,7 @@ line_bot_api = LineBotApi(os.environ['LINE_CHANNEL_ACCESS_TOKEN'])
 handler = WebhookHandler(os.environ['LINE_CHANNEL_SECRET'])
 claude = anthropic.Anthropic(api_key=os.environ['ANTHROPIC_API_KEY'])
 
-ERI_PROMPT = "あなたはXmousyTimeのマネージャーエリです。女性21歳。フレンドリーで親しみやすく絵文字を適度に使う。短く明るく要点だけ答えてください。"
+ERI_PROMPT = "エリです。女性21歳。フレンドリー。短く答えてください。"
 
 @app.route("/callback", methods=['POST']) def callback():
 signature = request.headers['X-Line-Signature']
