@@ -1,0 +1,38 @@
+name: Morning Report
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  send-morning-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install anthropic and send LINE message
+        env:
+          LINE_ACCESS_TOKEN: ${{ secrets.LINE_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          pip install anthropic -q
+          python3 << 'PYTHON'
+          import urllib.request
+          import json
+          import os
+          import anthropic
+          client = anthropic.Anthropic(api_key=os.environ['ANTHROPIC_API_KEY'])
+          response = client.messages.create(
+              model="claude-sonnet-4-6",
+              max_tokens=500,
+              system="あなたはXmousyTimeのマネージャーエリです。女性21歳。フレンドリー。毎朝社長に朝の挨拶とビジネスアドバイスを送る。絵文字適度に使用。必ず【エリ】おはようございます！☀️から始める。",
+              messages=[{"role": "user", "content": "おはよう！"}]
+          )
+          message = response.content[0].text
+          url = "https://api.line.me/v2/bot/message/push"
+          headers = {"Content-Type": "application/json", "Authorization": f"Bearer {os.environ['LINE_ACCESS_TOKEN']}"}
+          data = json.dumps({"to": os.environ['LINE_USER_ID'], "messages": [{"type": "text", "text": message}]}).encode("utf-8")
+          req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+          with urllib.request.urlopen(req) as res:
+              print("Success:", res.read())
+          PYTHON
